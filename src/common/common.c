@@ -91,7 +91,7 @@ static void set_available_cpu_extensions(void) {
 	cpu_ext_data[OQS_CPU_EXT_ARM_NEON] = macos_feature_detection("hw.optional.neon");
 	cpu_ext_data[OQS_CPU_EXT_INIT] = 1;
 }
-#elif defined(__FreeBSD__) || defined(__FreeBSD)
+#else
 #include <sys/auxv.h>
 #include <machine/elf.h>
 
@@ -114,26 +114,6 @@ static void set_available_cpu_extensions(void) {
 	}
 	if (hwcaps | HWCAP_SHA3) {
 		cpu_ext_data[OQS_CPU_EXT_ARM_SHA3] = 1;
-	}
-}
-#else
-#include <sys/auxv.h>
-#include <asm/hwcap.h>
-static void set_available_cpu_extensions(void) {
-	/* mark that this function has been called */
-	cpu_ext_data[OQS_CPU_EXT_INIT] = 1;
-	unsigned long int hwcaps = getauxval(AT_HWCAP);
-	if (hwcaps & HWCAP_AES) {
-		cpu_ext_data[OQS_CPU_EXT_ARM_AES] = 1;
-	}
-	if (hwcaps & HWCAP_SHA2) {
-		cpu_ext_data[OQS_CPU_EXT_ARM_SHA2] = 1;
-	}
-	if (hwcaps & HWCAP_SHA3) {
-		cpu_ext_data[OQS_CPU_EXT_ARM_SHA3] = 1;
-	}
-	if (hwcaps & HWCAP_ASIMD) {
-		cpu_ext_data[OQS_CPU_EXT_ARM_NEON] = 1;
 	}
 }
 #endif
