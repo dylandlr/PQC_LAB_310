@@ -93,16 +93,26 @@ static void set_available_cpu_extensions(void) {
 }
 #else
 #include <sys/auxv.h>
+#if defined(__FreeBSD__) ||  defined(__FreeBSD)
 #include <machine/elf.h>
+#endif
 
 static void set_available_cpu_extensions(void) {
 	/* mark that this function has been called */
-	u_long hwcaps = 0;
+	uint64_t hwcaps = 0;
 	cpu_ext_data[OQS_CPU_EXT_INIT] = 1;
-	if (elf_aux_info(AT_HWCAP, &hwcaps, sizeof(u_long))) {
+	#if defined(__FreeBSD__) || defined(__FreeBSD)
+	if (elf_aux_info(AT_HWCAP, &hwcaps, sizeof(uint64_t))) {
 		fprintf(stderr, "Error getting HWCAP for ARM on FreeBSD\n");
 		return;
 	}
+	#else
+	hwcaps = getauxval(AT_HWCAP);
+	if (hwcaps == ENOENT) {
+		fprintf(stderr, "Error getting HWCAP for ARM on Linux\n");
+		return;
+	}
+	#endif
 	if (hwcaps | HWCAP_AES) {
 		cpu_ext_data[OQS_CPU_EXT_ARM_AES] = 1;
 	}
